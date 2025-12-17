@@ -1,0 +1,13 @@
+python text-dedup/minhash_dedup.py \
+  --path "data.jsonl" \
+  --local \
+  --split "train" \
+  --cache_dir "./cache" \
+  --output "data/question_dedup/deduped_datasets" \
+  --column "question" \
+  --batch_size 10000 \
+  --use_auth_token true \
+  --b 1 \
+  --r 10 \
+  --ngram 3 \
+  --threshold 0.6
