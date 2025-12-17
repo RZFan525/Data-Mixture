@@ -14,7 +14,7 @@ def count_tokens(text, tokenizer):
         print(f"发生错误: {e}")
         return -1
 
-def process_jsonl_file(input_path, output_path, tokenizer_path="/inspire/hdd/global_user/liupengfei-24025/rzfan/models/Qwen2.5-7B"):
+def process_jsonl_file(input_path, output_path, tokenizer_path="./models/Qwen2.5-7B"):
     """
     处理JSONL文件，计算token长度，排序并保存前17万个最长的数据
     
@@ -40,7 +40,7 @@ def process_jsonl_file(input_path, output_path, tokenizer_path="/inspire/hdd/glo
                 
                 # 检查是否包含目标字段
 
-                response_text = item["Qwen2.5_72B_Instruct_Response"][0]
+                response_text = item["answer"][0]
                 
                 # 计算token长度
                 length = count_tokens(response_text, tokenizer)
@@ -88,13 +88,13 @@ def process_jsonl_file(input_path, output_path, tokenizer_path="/inspire/hdd/glo
     print(f"处理完成! 已保存 {actual_count} 个数据项到 {output_path}")
 
 def main():
-    input_path = "/inspire/hdd/global_user/liupengfei-24025/rzfan/scitextbooks_extracted_qa/distill_answer_Qwen2.5_72B_instruct/natural_reasoning/final_data/natural_reasoning_distill_qwen_72b.jsonl"
-    output_path = "/inspire/hdd/global_user/liupengfei-24025/rzfan/scitextbooks_extracted_qa/distill_answer_Qwen2.5_72B_instruct/natural_reasoning/final_data/natural_reasoning_distill_qwen_72b_selection_long_length_436386.jsonl"
+    input_path = "data/natural_reasoning_distill_qwen.jsonl"
+    output_path = "data/natural_reasoning_distill_qwen_selection_long_length_436386.jsonl"
     parser = argparse.ArgumentParser(description="处理JSONL文件，计算token长度并筛选前n个最长数据")
     parser.add_argument("--input_path", help="输入JSONL文件路径", default=input_path)
     parser.add_argument("--output_path", help="输出JSONL文件路径", default=output_path)
     parser.add_argument("--tokenizer_path", 
-                       default="/inspire/hdd/global_user/liupengfei-24025/rzfan/models/Qwen2.5-7B",
+                       default="models/Qwen2.5-7B",
                        help="tokenizer模型路径")
     
     args = parser.parse_args()

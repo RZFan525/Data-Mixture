@@ -72,9 +72,11 @@ def run_inference(args):
         mapping = []          # Used to record the sample index and chunk order in the original batch corresponding to each prompt
         # Iterate through each sample in the batch
         for sample_idx, sample in enumerate(tqdm(batch, total=len(batch), unit="sample", desc="Tokenizing samples")):
-            question = sample["refined_question"]
+            question = sample["question"]
+            student_answer = sample["distill_answer"]
+            reference_answer = sample["reference_answer"]
             total_msg = [
-                {"role": "user", "content": score_prompt.replace("<PROBLEM>", question)}
+                {"role": "user", "content": score_prompt.replace("<PROBLEM>", question).replace("<REFERENCE_ANSWER>", reference_answer).replace("<STUDENT_ANSWER>", student_answer)}
             ]
             # If the number of samples is small, print partial content for debugging
             if sample_idx <= 1:
@@ -104,7 +106,7 @@ def run_inference(args):
         # Generate a new results list, where each element corresponds to an original document and contains generation results from all chunks
         new_results = []
         for idx, sample in enumerate(batch):
-            sample["distill_cot"] = outputs[idx]
+            sample["Qwen2.5_32B_Instruct_Eval"] = outputs[idx]
             new_results.append(sample)
         
         # Save the results of this batch as a jsonl file

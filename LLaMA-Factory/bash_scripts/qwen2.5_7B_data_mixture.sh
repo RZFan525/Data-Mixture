@@ -19,18 +19,18 @@ mkdir -p $WANDB_DIR
 
 
 
-export PATH="/inspire/hdd/global_user/liupengfei-24025/rzfan/miniconda3/bin:$PATH"
+export PATH="./rzfan/miniconda3/bin:$PATH"
 source activate factory
 cd /inspire/hdd/global_user/liupengfei-24025/rzfan/LLaMA-Factory
 
 export logging_dir=./logging
-export save_name=textbooks_reasoning_distill_llama3.3_70b.lr5e-6.bs512
+export save_name=data_mixture.lr5e-6.bs512-epoch-4
 mkdir -p "${logging_dir}/${save_name}"
 
 export WANDB_PROJECT="science_sft"
 export WANDB_NAME=${save_name}
 
 
-yaml=/inspire/hdd/global_user/liupengfei-24025/rzfan/LLaMA-Factory/yaml/qwen2.5_7B_textbooks_reasoning_distill_llama3.3_70b.yaml
+yaml=LLaMA-Factory/yaml/qwen2.5_7B_data_mixture.yaml
 
-FORCE_TORCHRUN=1 NNODES=${PET_NNODES} NODE_RANK=${PET_NODE_RANK} MASTER_ADDR=${MASTER_ADDR} MASTER_PORT=${MASTER_PORT} /inspire/hdd/global_user/liupengfei-24025/rzfan/miniconda3/envs/factory/bin/llamafactory-cli train $yaml > ${logging_dir}/${save_name}/${PET_NODE_RANK}_${PET_NNODES}.log 2>&1
+FORCE_TORCHRUN=1 NNODES=${PET_NNODES} NODE_RANK=${PET_NODE_RANK} MASTER_ADDR=${MASTER_ADDR} MASTER_PORT=${MASTER_PORT} ./rzfan/miniconda3/envs/factory/bin/llamafactory-cli train $yaml > ${logging_dir}/${save_name}/${PET_NODE_RANK}_${PET_NNODES}.log 2>&1

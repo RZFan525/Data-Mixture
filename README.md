@@ -1,6 +1,6 @@
 # A Mixture of Post-training Datasets to Enhance the Scientific Reasoning Capability of Large Language Models
 
-## ⚙️ Data Process Pipeline
+## Data Process
 
 ### Step 0. Install Environment
 
@@ -114,7 +114,7 @@ python vllm_inference/llm_based_decontamination_postprocess.py \
     --output_path data/llm_based_decontamination/final_data/dataset_decontamination.jsonl
 ```
 
-Step 3. Random Selection
+### Step 3. Random Selection
 
 Change the input path and output path in `data_selection_by_random.py`, then run:
 
@@ -122,5 +122,54 @@ Change the input path and output path in `data_selection_by_random.py`, then run
 python data_selection_by_random.py
 ```
 
-Step 4. Response Length Selection
+### Step 4. Response Length Selection
 
+Change the input path and output path in `data_selection_by_answer_length.py`, then run:
+
+```bash
+python data_selection_by_answer_length.py
+```
+
+### Step 5. Difficulty Selection
+
+Extract reference answer:
+
+```bash
+bash script/extract_reference_answer.sh
+```
+
+Distill answer:
+
+```bash
+bash script/distill_answer.sh
+```
+
+Data Selection:
+
+```bash
+python data_selection_by_eval_score_mp.py
+```
+
+## Training
+
+`cd LLaMA-Factory`
+
+Following [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory) to set up the environment.
+
+Change path and superparameters in `yaml` and `bash_scripts`.
+
+run bash scripts:
+
+```bash
+bash bash_scripts/data_mixture.sh
+```
+
+## Evaluation
+
+`cd lm-open-science-evaluation`
+
+Following [Language Model Open Science Evaluation](https://github.com/GAIR-NLP/lm-open-science-evaluation) to set up the environment.
+
+```bash
+bash scripts/eval_science.sh <model_path>
+```

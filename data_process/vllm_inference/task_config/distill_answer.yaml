@@ -12,11 +12,11 @@ N_NODES: 1
 NODE_GPUS: 8
 
 # Data Configs
-data_path: data/augment_cot/distill_cot/final_data/refined_augmented_cot_qa.jsonl
-prompt_path: vllm_inference/prompt/filtering_qa.prompt
+data_path: data/dataset.jsonl
+prompt_path: vllm_inference/prompt/distill_answer.prompt
 data_format: jsonl
 
 # Save configs
-save_path: data/filter_qa/original_data
-save_name: filter_qa
+save_path: data/augment_cot/distill_cot/original_data
+save_name: distill_answer
 save_interval: 64

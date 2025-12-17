@@ -68,7 +68,7 @@ def sample_failed_cases(
 
 
 if __name__ == "__main__":
-    input_path = "/Users/fanrunze/umass/CS685/final_project/megascience_mixture_filtering.lr5e-6.bs512-epoch-3/checkpoint-7344"
+    input_path = "data_mixture_filtering.lr5e-6.bs512-epoch-3/checkpoint-7344"
     output_path = "error_cases.json"
 
     sample_failed_cases(

@@ -3,9 +3,8 @@ import json
 import os
 from typing import List, Dict, Optional
 import torch
-import torch.distributed as dist
+# import torch.distributed as dist
 from vllm import LLM, SamplingParams
-# from vllm.distributed import initialize_distributed_environment
 from config import GentaskConfig
 from transformers import AutoTokenizer
 from tqdm import tqdm
@@ -22,13 +21,9 @@ def split_into_batches(arguments, batch_size):
         ]
 
 def run_inference(args):
+    print(args)
     config = GentaskConfig.from_yaml(args.config_path)
     config.__post_init__()
-    # Initialize distributed environment
-    # initialize_distributed_environment(
-    #     tensor_parallel_size=config.NODE_GPUS,
-    #     pipeline_parallel_size=config.N_NODES
-    # )
     
     print(f"Loading model: {config.model_path}")
     print(f"Tensor parallel size: {config.NODE_GPUS}")
@@ -38,9 +33,7 @@ def run_inference(args):
     llm = LLM(
         model=config.model_path,
         tensor_parallel_size=config.tp_size,
-        # pipeline_parallel_size=config.N_NODES,
         trust_remote_code=True,
-        # dtype="bfloat16",  # Use bfloat16 for better performance
         gpu_memory_utilization=0.9,  # Adjust if needed
     )
     tokenizer = AutoTokenizer.from_pretrained(config.model_path)
@@ -65,51 +58,41 @@ def run_inference(args):
                     idx += 1
     else:
         raise ValueError(f"Cannot support data format: {config.data_format}")
-    
-    # for _, doc in enumerate(
-    #     data_reader.run(rank=config.GLOBAL_RANK, world_size=config.TOTAL_SPLIT)
-    # ):
-    #     arguments.append({"text": doc.text, "metadata": doc.metadata})
-    # for idx, doc in enumerate(data_reader.run()):
-    #     if idx % config.TOTAL_SPLIT == config.GLOBAL_RANK:
-    #         arguments.append({"text": doc.text, "metadata": doc.metadata})
-
-    
+ 
     dir_path = config.get_save_dir_path()
     base_name = config.save_name
     os.makedirs(dir_path, exist_ok=True)
     batches = split_into_batches(arguments, config.save_interval)
     
     score_prompt = open(config.prompt_path, "r").read()
-    # Run batch inference
     
+    # Run batch inference
     for batch_idx, batch in enumerate(tqdm(batches, desc="Processing batches")):
-        all_prompts = []      # 存储所有需要发送给 engine 的消息（包括拆分后的各个 chunk）
-        mapping = []          # 用于记录每个 prompt 对应原始 batch 中的样本索引及 chunk 顺序
-        # 遍历 batch 中的每个样本
+        all_prompts = []      # Store all messages that need to be sent to the engine (including each chunk after splitting)
+        mapping = []          # Used to record the sample index and chunk order in the original batch corresponding to each prompt
+        # Iterate through each sample in the batch
         for sample_idx, sample in enumerate(tqdm(batch, total=len(batch), unit="sample", desc="Tokenizing samples")):
             question = sample["refined_question"]
             total_msg = [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": score_prompt.replace("<PROBLEM>", question)},
+                {"role": "user", "content": score_prompt.replace("<PROBLEM>", question)}
             ]
-            # 如果样本数较小，调试打印部分内容
+            # If the number of samples is small, print partial content for debugging
             if sample_idx <= 1:
                 print("Debug - Prompt message:")
                 # print(total_msg)
                 print(tokenizer.apply_chat_template(total_msg, tokenize=False))
             all_prompts.append(tokenizer.apply_chat_template(total_msg, tokenize=True, add_generation_prompt=True))
-            # 记录下该 prompt 来自哪个文档以及在文档中的第几个 chunk
+            # Record which document this prompt comes from and which chunk it is in the document
             mapping.append(sample_idx)
         
-        # 调用生成引擎处理所有 prompt
+        # Call the generation engine to process all prompts
         outputs = llm.generate(
             sampling_params=sampling_params, prompt_token_ids=all_prompts
         )
-        # 去掉输出两端的空格
+        # Remove leading and trailing whitespace from outputs
         outputs = [item.outputs[0].text.strip() for item in outputs]
         
-        # 调试打印部分生成结果
+        # Debug print partial generation results
         for idx_out, item in enumerate(outputs):
             if idx_out > 2:
                 break
@@ -118,13 +101,13 @@ def run_inference(args):
             print("-" * 100)
         
         
-        # 生成新的结果列表，每个元素对应一个原始文档，并包含所有 chunk 的生成结果
+        # Generate a new results list, where each element corresponds to an original document and contains generation results from all chunks
         new_results = []
         for idx, sample in enumerate(batch):
-            sample["question_quality_annotation_output"] = outputs[idx]
+            sample["distill_answer"] = outputs[idx]
             new_results.append(sample)
         
-        # 将该 batch 的结果保存为 jsonl 文件
+        # Save the results of this batch as a jsonl file
         out_path = os.path.join(
             dir_path,
             f"{base_name}_{batch_idx + 1}_{(len(arguments) - 1) // config.save_interval + 1}.jsonl",

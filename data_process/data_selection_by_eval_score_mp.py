@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # Replace with your actual file path
 
     # for subject in subjects:
-    jsonl_file_path = f"/inspire/hdd/global_user/liupengfei-24025/rzfan/scitextbooks_extracted_qa/model_eval_Qwen2.5_32B_Instruct/natural_reasoning/final_data/natural_reasoning_model_eval_Qwen2.5_32B.jsonl"
-    output_path = f"/inspire/hdd/global_user/liupengfei-24025/rzfan/scitextbooks_extracted_qa/model_eval_Qwen2.5_32B_Instruct/natural_reasoning/final_data/natural_reasoning_model_eval_Qwen2.5_32B_difficulty_selection_1_9_.jsonl"
+    jsonl_file_path = f"data/natural_reasoning_model_eval_Qwen2.5_32B.jsonl"
+    output_path = f"data/natural_reasoning_model_eval_Qwen2.5_32B_difficulty_selection_1_9_.jsonl"
     # print(subject)
     data_selection_two_threshold(jsonl_file_path, output_path)
