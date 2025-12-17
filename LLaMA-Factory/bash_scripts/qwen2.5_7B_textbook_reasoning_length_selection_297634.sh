@@ -11,7 +11,7 @@ export NCCL_IB_RETRY_CNT=7
 export NCCL_IB_HCA=^=mlx5_3,mlx5_4,mlx5_5,mlx5_bond_0
 ulimit -l unlimited
 
-export WANDB_API_KEY="7ddd1c3e592ae52beef725e0192a51163dec750b"
+export WANDB_API_KEY=""
 export WANDB_MODE="offline"
 
 export WANDB_DIR="wandb_log"
